@@ -538,12 +538,18 @@ function buildLevel(){
 }
 
 // ---------------- INPUT ----------------
+function isTypingInField(){
+  const el = document.activeElement;
+  return el && (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA');
+}
 window.addEventListener('keydown', e=>{
+  if(isTypingInField()) return; // huwag agawin ang Space/arrow keys habang nag-tatype sa form
   if(['ArrowLeft','a','A'].includes(e.key)) keys.left=true;
   if(['ArrowRight','d','D'].includes(e.key)) keys.right=true;
   if(['ArrowUp','w','W',' '].includes(e.key)){ keys.jump=true; e.preventDefault(); }
 });
 window.addEventListener('keyup', e=>{
+  if(isTypingInField()) return;
   if(['ArrowLeft','a','A'].includes(e.key)) keys.left=false;
   if(['ArrowRight','d','D'].includes(e.key)) keys.right=false;
   if(['ArrowUp','w','W',' '].includes(e.key)) keys.jump=false;
