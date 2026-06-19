@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Number Hunters: Takbuhan sa Bukid</title>
+<style>
+  :root{
+    --sky-top:#6EC6E8;
+    --sky-bottom:#C9F0EA;
+    --wood:#9A6B3D;
+    --wood-dark:#6E4524;
+    --cream:#FFF6E0;
+    --heart:#E8475E;
+    --heart-empty:#3a2a2a33;
+    --accent-gold:#FFD25A;
+    --zombie:#7FA06B;
+    --ink:#2c1d10;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:#1c2b22;
+    font-family:'Trebuchet MS','Segoe UI Rounded',system-ui,sans-serif;
+    overflow:hidden;
+    touch-action:none;
+  }
+  #wrap{
+    position:relative;
+    width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #stage{
+    position:relative;
+    width:min(96vw, 960px);
+    aspect-ratio:960/540;
+    box-shadow:0 18px 50px rgba(0,0,0,0.5);
+    border-radius:14px;
+    overflow:hidden;
+    border:5px solid #3a2a18;
+  }
+  canvas{
+    display:block;
+    width:100%;height:100%;
+  }
+  #overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center, rgba(15,25,18,0.78), rgba(5,10,8,0.92));
+    color:var(--cream);
+    text-align:center;
+    padding:5%;
+    gap:14px;
+    z-index:10;
+  }
+  #overlay.hidden{display:none;}
+  #overlay h1{
+    font-size:clamp(22px,5vw,40px);
+    margin:0;
+    color:var(--accent-gold);
+    text-shadow:3px 3px 0 var(--wood-dark), 0 0 20px rgba(255,210,90,0.5);
+    letter-spacing:1px;
+  }
+  #overlay p{
+    font-size:clamp(13px,2.4vw,17px);
+    max-width:520px;
+    line-height:1.5;
+    margin:0;
+    color:#eaf4ea;
+  }
+  #overlay .sub{
+    color:#ffd25a;
+    font-weight:bold;
+  }
+  .btn{
+    margin-top:6px;
+    padding:12px 30px;
+    font-size:clamp(15px,2.6vw,19px);
+    font-weight:bold;
+    color:var(--ink);
+    background:linear-gradient(180deg,#9CE38C,#5FAF5A);
+    border:3px solid #355c30;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow:0 5px 0 #2f4a2a, 0 8px 16px rgba(0,0,0,0.4);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #2f4a2a;}
+  #controls{
+    position:absolute;
+    bottom:14px;left:0;right:0;
+    display:flex;justify-content:space-between;
+    padding:0 14px;
+    pointer-events:none;
+    z-index:5;
+  }
+  .pad{
+    display:flex;gap:10px;
+    pointer-events:auto;
+  }
+  .cbtn{
+    width:58px;height:58px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.18);
+    border:2px solid rgba(255,255,255,0.5);
+    color:#fff;
+    font-size:24px;
+    display:flex;align-items:center;justify-content:center;
+    user-select:none;
+    backdrop-filter:blur(2px);
+  }
+  .cbtn:active{background:rgba(255,255,255,0.4);}
+  #loginOverlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center, rgba(15,25,18,0.85), rgba(5,10,8,0.95));
+    color:var(--cream);
+    text-align:center;
+    padding:5%;
+    gap:12px;
+    z-index:12;
+  }
+  #loginOverlay.hidden{display:none;}
+  #loginOverlay h1{
+    font-size:clamp(22px,5vw,38px);
+    margin:0 0 4px 0;
+    color:var(--accent-gold);
+    text-shadow:3px 3px 0 var(--wood-dark), 0 0 20px rgba(255,210,90,0.5);
+  }
+  #loginOverlay .tagline{
+    font-size:clamp(12px,2.2vw,15px);
+    color:#eaf4ea;
+    margin:0 0 10px 0;
+  }
+  .field{
+    width:min(86vw, 360px);
+    display:flex;flex-direction:column;align-items:flex-start;
+    gap:4px;
+  }
+  .field label{
+    font-size:13px;
+    color:var(--accent-gold);
+    font-weight:bold;
+    padding-left:4px;
+  }
+  .field select, .field input{
+    width:100%;
+    padding:10px 14px;
+    font-size:15px;
+    font-family:inherit;
+    border-radius:10px;
+    border:2px solid var(--wood-dark);
+    background:var(--cream);
+    color:var(--ink);
+    outline:none;
+  }
+  .field select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    padding-right:38px;
+    cursor:pointer;
+  }
+  .select-wrap{
+    position:relative;
+    width:100%;
+  }
+  .select-wrap::after{
+    content:'▼';
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:12px;
+    color:var(--wood-dark);
+    pointer-events:none;
+  }
+  .field select:focus, .field input:focus{
+    border-color:var(--accent-gold);
+    box-shadow:0 0 0 3px rgba(255,210,90,0.35);
+  }
+  #loginError{
+    color:#FF8C8C;
+    font-size:13px;
+    min-height:16px;
+    margin:0;
+  }
+  #hint{
+    position:absolute;top:8px;left:0;right:0;
+    text-align:center;
+    color:rgba(255,255,255,0.65);
+    font-size:12px;
+    z-index:4;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div id="hint">⬅️➡️ galaw • ⬆️/Space tumalon • tapakan ang zombie mula sa ITAAS para patayin</div>
+    <div id="controls">
+      <div class="pad">
+        <div class="cbtn" id="btnLeft">◀</div>
+        <div class="cbtn" id="btnRight">▶</div>
+      </div>
+      <div class="pad">
+        <div class="cbtn" id="btnJump">⤴</div>
+      </div>
+    </div>
+    <div id="loginOverlay">
+      <h1>🔢 NUMBER HUNTERS 🌽</h1>
+      <p class="tagline">Mag-log in muna bago maglaro</p>
+      <div class="field">
+        <label for="districtSelect">District</label>
+        <div class="select-wrap">
+          <select id="districtSelect">
+            <option value="" disabled selected>Piliin ang District</option>
+            <option>Alcantara</option>
+            <option>Banton</option>
+            <option>Corcuera</option>
+            <option>Concepcion</option>
+            <option>Looc</option>
+            <option>San Fernando</option>
+            <option>Cajidiocan-Magdiwang</option>
+            <option>Romblon</option>
+            <option>San Andres</option>
+            <option>Odiongan North</option>
+            <option>Odiongan South</option>
+            <option>San Agustin-Santa Maria-Calatrava</option>
+            <option>San Jose-Santa Fe</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="schoolInput">Pangalan ng Paaralan</label>
+        <input type="text" id="schoolInput" placeholder="i-type dito..." autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="difficultySelect">Klase ng Problema</label>
+        <div class="select-wrap">
+          <select id="difficultySelect">
+            <option value="1x1" selected>1-digit × 1-digit (1-9) — + − × ÷</option>
+            <option value="2x1">2-digit × 1-digit — + − × ÷</option>
+            <option value="2x2">2-digit × 2-digit — + − × ÷</option>
+          </select>
+        </div>
+      </div>
+      <p id="loginError"></p>
+      <button class="btn" id="proceedBtn">▶ Tuloy sa Laro</button>
+    </div>
+    <div id="overlay" class="hidden">
+      <h1>🔢 NUMBER HUNTERS 🌽</h1>
+      <p>Sagutin ang math problem sa itaas, hanapin at hulihin ang <span class="sub">tamang bilang</span> na nasa paligid.
+      Mag-ingat kasi may mga <span class="sub">gumagalang zombies</span>. Apakan sila mula sa itaas para patayin, pero kung mababangga mo ito sa gilid, mababawasan ang buhay mo.</p>
+      <button class="btn" id="startBtn">▶ SIMULAN</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const overlay = document.getElementById('overlay');
+const startBtn = document.getElementById('startBtn');
+const loginOverlay = document.getElementById('loginOverlay');
+const proceedBtn = document.getElementById('proceedBtn');
+const districtSelect = document.getElementById('districtSelect');
+const schoolInput = document.getElementById('schoolInput');
+const difficultySelect = document.getElementById('difficultySelect');
+const loginError = document.getElementById('loginError');
+let difficulty = '1x1';
+
+// ---------------- LOGIN / GOOGLE SHEETS LOGGING ----------------
+// PALITAN ito ng Web App URL mo galing sa Google Apps Script deployment
+// (tingnan ang kasamang Apps Script code para sa instructions).
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8-joZ7rwumFpCucoivTY-WNGsc97g5YJqf-QxripdeLkkaELNzX9UEfMefr5hGE_D/exec';
+let playerSchool = '', playerDistrict = '';
+
+function logToSheet(district, school){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_') === 0) return; // hindi pa na-configure
+  fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify({ district, school })
+  }).catch(()=>{ /* tahimik na i-ignore kung walang internet */ });
+}
+
+proceedBtn.addEventListener('click', ()=>{
+  const district = districtSelect.value;
+  const school = schoolInput.value.trim();
+  if(!district){ loginError.textContent = 'Piliin muna ang District.'; return; }
+  if(!school){ loginError.textContent = 'I-type ang pangalan ng paaralan.'; return; }
+  loginError.textContent = '';
+  playerDistrict = district; playerSchool = school;
+  difficulty = difficultySelect.value;
+  logToSheet(district, school);
+  loginOverlay.classList.add('hidden');
+  overlay.classList.remove('hidden');
+});
+
+// ---------------- AUDIO (Web Audio synth, no external files) ----------------
+let actx = null;
+function ensureAudio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function beep(freq, dur, type, vol, glide){
+  if(!actx) return;
+  const t0 = actx.currentTime;
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'square';
+  o.frequency.setValueAtTime(freq, t0);
+  if(glide) o.frequency.linearRampToValueAtTime(glide, t0+dur);
+  g.gain.setValueAtTime(vol||0.18, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0+dur);
+}
+const sfx = {
+  jump: ()=>beep(420,0.12,'square',0.15,620),
+  wrong: ()=>beep(180,0.25,'sawtooth',0.18,90),
+  correct: ()=>{ beep(523,0.12,'square',0.18,784); setTimeout(()=>beep(784,0.16,'square',0.18,1046),90); },
+  stomp: ()=>beep(150,0.14,'square',0.2,60),
+  hit: ()=>beep(120,0.22,'sawtooth',0.22,50),
+  win: ()=>{ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'square',0.18),i*120)); },
+  lose: ()=>{ [300,250,200,150].forEach((f,i)=>setTimeout(()=>beep(f,0.25,'sawtooth',0.2),i*150)); }
+};
+
+// ---------------- GAME STATE ----------------
+let state = 'start'; // start | playing | roundclear | gameover
+let life = 10;
+const MAX_LIFE = 10;
+let round = 1;
+let problem = null;
+let invuln = 0;
+let shakeT = 0, shakeMag = 0;
+let particles = [];
+let popups = [];
+let bannerT = 0, bannerText = '';
+let time = 0;
+
+let score = 0;
+let level = 1;
+const LEVEL_THRESHOLD = 15; // bawat 15 puntos = level up + bagong environment
+
+const GRAVITY = 0.85;
+const MOVE_SPEED = 4.3;
+const JUMP_VEL = -12.4;
+const GROUND_Y = 470;
+
+const player = { x:90,y:0,w:38,h:54,vx:0,vy:0,onGround:false,dir:1,runPhase:0,squash:1 };
+let keys = { left:false, right:false, jump:false };
+
+let platforms = [];
+let blocks = [];
+let zombies = [];
+let clouds = [];
+let blades = [];
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+function randi(a,b){ return Math.floor(rand(a,b+1)); }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+// ---------------- ENVIRONMENT THEMES (level-up changes these) ----------------
+const THEMES = [
+  { key:'bukid', label:'Bukid', skyTop:'#6EC6E8', skyBottom:'#CDF1EA', hill1:'#5FA777', hill2:'#79CB8E',
+    groundTop:'#6FCF6F', groundTopShade:'#5BBE5B', groundBody:'#8B5E3C',
+    plateTop:'#5FBE63', plateBody:'#7A4E2D', decor:'blades', ambientColor:'rgba(255,255,255,0.85)', sunMoon:'sun' },
+  { key:'dagat', label:'Karagatan', skyTop:'#1C6FA8', skyBottom:'#4FB8D6', hill1:'#0F4C75', hill2:'#1670A0',
+    groundTop:'#E8D29A', groundTopShade:'#D8BD7E', groundBody:'#C7A45F',
+    plateTop:'#3FA6C9', plateBody:'#1E6E8C', decor:'bubbles', ambientColor:'rgba(255,255,255,0.5)', sunMoon:'none' },
+  { key:'kalawakan', label:'Kalawakan', skyTop:'#0B0B2A', skyBottom:'#23234F', hill1:'#171738', hill2:'#2B2B5A',
+    groundTop:'#9aa0b8', groundTopShade:'#7d839c', groundBody:'#4d5170',
+    plateTop:'#8d93ad', plateBody:'#5a5f7d', decor:'stars', ambientColor:'rgba(255,255,255,0.9)', sunMoon:'planet' },
+  { key:'himpapawid', label:'Himpapawid', skyTop:'#8FD8FF', skyBottom:'#EAF8FF', hill1:'#FFFFFF', hill2:'#F0FBFF',
+    groundTop:'#FFFFFF', groundTopShade:'#E6F4FB', groundBody:'#CFEFFF',
+    plateTop:'#FFFFFF', plateBody:'#D9F0FF', decor:'clouds', ambientColor:'rgba(255,255,255,0.95)', sunMoon:'rainbow' },
+];
+let themeIndex = 0;
+let theme = THEMES[themeIndex];
+
+// ---------------- BACKGROUND DECOR ----------------
+function initDecor(){
+  clouds = [];
+  const count = theme.decor==='stars' ? 50 : (theme.decor==='bubbles' ? 18 : 6);
+  for(let i=0;i<count;i++){
+    if(theme.decor==='bubbles'){
+      clouds.push({x:rand(0,W), y:rand(0,H), s:rand(0.3,1), spd:rand(8,22)});
+    } else if(theme.decor==='stars'){
+      clouds.push({x:rand(0,W), y:rand(10,260), s:rand(0.3,1), spd:rand(1,3), phase:rand(0,Math.PI*2)});
+    } else {
+      clouds.push({x:rand(0,W), y:rand(20,150), s:rand(0.6,1.3), spd:rand(4,10)});
+    }
+  }
+  blades = [];
+  for(let i=0;i<70;i++){
+    blades.push({x:rand(0,W), h:rand(6,16), phase:rand(0,Math.PI*2)});
+  }
+}
+
+// ---------------- PROBLEM / NUMBERS ----------------
+function generateProblem(){
+  const ops = ['+','-','×','÷'];
+  const op = ops[randi(0, ops.length-1)];
+  const d1 = ()=>randi(1,9);
+  const d2 = ()=>randi(10,99);
+  let a,b,answer;
+
+  if(op==='÷'){
+    // Pinipili muna ang divisor at quotient para garantisadong walang labis (whole number lagi).
+    if(difficulty==='2x2'){
+      b = randi(10,33);            // 2-digit divisor
+      const maxQ = Math.max(2, Math.floor(99/b));
+      const q = randi(2, maxQ);
+      a = b*q;                     // 2-digit dividend
+    } else if(difficulty==='2x1'){
+      b = randi(2,9);              // 1-digit divisor
+      const minQ = Math.max(1, Math.ceil(10/b));
+      const maxQ = Math.max(minQ, Math.floor(99/b));
+      const q = randi(minQ, maxQ);
+      a = b*q;                     // 2-digit dividend
+    } else { // 1x1
+      b = randi(2,9);              // 1-digit divisor
+      const maxQ = Math.max(1, Math.floor(9/b));
+      const q = randi(1, maxQ);
+      a = b*q;                     // 1-digit dividend
+    }
+    answer = a/b;
+  } else {
+    if(difficulty==='2x2'){ a=d2(); b=d2(); }
+    else if(difficulty==='2x1'){ if(Math.random()<0.5){ a=d2(); b=d1(); } else { a=d1(); b=d2(); } }
+    else { a=d1(); b=d1(); } // 1x1
+
+    if(op==='+'){
+      answer = a+b;
+    } else if(op==='-'){
+      if(a < b){ const t=a; a=b; b=t; } // i-ayos para hindi negative ang sagot
+      answer = a-b;
+    } else { // ×
+      answer = a*b;
+    }
+  }
+  return {a,b,op,answer};
+}
+
+// ---------------- LEVEL LAYOUTS (iba-ibang ayos ng hagdan) ----------------
+const MID_Y = 400, HIGH_Y = 330; // dalawang baitang sa itaas ng lupa, 70px gap bawat isa
+
+const LEVEL_LAYOUTS = [
+  { name:'Magkabilang Panig',
+    mids:[{x:70,w:130},{x:400,w:160},{x:760,w:130}],
+    highs:[{x:30,w:100},{x:810,w:100}],
+    groundX:[200,460,720] },
+  { name:'Hagdang Zigzag',
+    mids:[{x:100,w:120},{x:420,w:120},{x:700,w:120}],
+    highs:[{x:260,w:110},{x:560,w:110}],
+    groundX:[160,480,820] },
+  { name:'Tore sa Gitna',
+    mids:[{x:230,w:130},{x:470,w:130},{x:680,w:130}],
+    highs:[{x:370,w:110},{x:600,w:110}],
+    groundX:[100,520,860] },
+  { name:'Di-Pantay na Tuktok',
+    mids:[{x:40,w:110},{x:430,w:140},{x:810,w:110}],
+    highs:[{x:140,w:100},{x:700,w:100}],
+    groundX:[250,490,730] },
+];
+
+function platformsFromLayout(layout){
+  const plats = [{x:0,y:GROUND_Y,w:W,h:H-GROUND_Y}];
+  layout.mids.forEach(m=>plats.push({x:m.x,y:MID_Y,w:m.w,h:22}));
+  layout.highs.forEach(h=>plats.push({x:h.x,y:HIGH_Y,w:h.w,h:22}));
+  return plats;
+}
+
+function slotsFromLayout(layout){
+  const slots = [];
+  layout.groundX.forEach(x=>slots.push({x, y:GROUND_Y-44, tier:'ground'}));
+  layout.mids.forEach(m=>slots.push({x:m.x+(m.w-46)/2, y:MID_Y-44, tier:'mid'}));
+  layout.highs.forEach(h=>slots.push({x:h.x+(h.w-46)/2, y:HIGH_Y-44, tier:'high'}));
+  return slots;
+}
+
+function buildBlocks(slots){
+  const answer = problem.answer;
+
+  // Group slot indices by height tier (ground / mid / high)
+  const tierIdx = {ground:[], mid:[], high:[]};
+  slots.forEach((s,i)=>tierIdx[s.tier].push(i));
+
+  // Place the CORRECT answer in one slot per tier — so there's always
+  // an option sa ibaba, sa gitna, at sa itaas (multiple valid routes).
+  const correctIdx = new Set([
+    tierIdx.ground[randi(0, tierIdx.ground.length-1)],
+    tierIdx.mid[randi(0, tierIdx.mid.length-1)],
+    tierIdx.high[randi(0, tierIdx.high.length-1)],
+  ]);
+
+  // Fill the remaining slots with unique distractor numbers near the answer.
+  const remaining = slots.map((_,i)=>i).filter(i=>!correctIdx.has(i));
+  let lo = Math.max(0, answer-6), hi = answer+6;
+  const distractSet = new Set();
+  let guard = 0;
+  while(distractSet.size < remaining.length && guard < 500){
+    const v = randi(lo,hi);
+    if(v !== answer) distractSet.add(v);
+    guard++;
+    if(guard % 100 === 0){ hi += 4; } // widen range if pool too small
+  }
+  const distractArr = shuffle(Array.from(distractSet));
+
+  blocks = slots.map((slot,i)=>{
+    const isCorrect = correctIdx.has(i);
+    const val = isCorrect ? answer : distractArr.pop();
+    return { x:slot.x, y:slot.y, w:46, h:42, value:val, correct:isCorrect, tier:slot.tier,
+             collected:false, bumpT:0, floatPhase:rand(0,Math.PI*2), shake:0 };
+  });
+}
+
+function buildLevel(){
+  const layout = LEVEL_LAYOUTS[randi(0, LEVEL_LAYOUTS.length-1)];
+  platforms = platformsFromLayout(layout);
+  problem = generateProblem();
+  buildBlocks(slotsFromLayout(layout));
+
+  const speedBoost = 1 + (round-1)*0.18;
+  zombies = [
+    {x:300,y:GROUND_Y-58,w:42,h:58,vx:1.1*speedBoost,minX:240,maxX:560,alive:true,bob:0,legPhase:0},
+    {x:700,y:GROUND_Y-58,w:42,h:58,vx:-1.2*speedBoost,minX:620,maxX:900,alive:true,bob:1.4,legPhase:1.5},
+  ];
+
+  player.x = 90; player.y = GROUND_Y - player.h; player.vx=0; player.vy=0;
+}
+
+// ---------------- INPUT ----------------
+window.addEventListener('keydown', e=>{
+  if(['ArrowLeft','a','A'].includes(e.key)) keys.left=true;
+  if(['ArrowRight','d','D'].includes(e.key)) keys.right=true;
+  if(['ArrowUp','w','W',' '].includes(e.key)){ keys.jump=true; e.preventDefault(); }
+});
+window.addEventListener('keyup', e=>{
+  if(['ArrowLeft','a','A'].includes(e.key)) keys.left=false;
+  if(['ArrowRight','d','D'].includes(e.key)) keys.right=false;
+  if(['ArrowUp','w','W',' '].includes(e.key)) keys.jump=false;
+});
+function bindHold(el, prop){
+  const on = (e)=>{ keys[prop]=true; e.preventDefault(); };
+  const off = (e)=>{ keys[prop]=false; if(e) e.preventDefault(); };
+  el.addEventListener('touchstart', on, {passive:false});
+  el.addEventListener('touchend', off, {passive:false});
+  el.addEventListener('mousedown', on);
+  el.addEventListener('mouseup', off);
+  el.addEventListener('mouseleave', off);
+}
+bindHold(document.getElementById('btnLeft'),'left');
+bindHold(document.getElementById('btnRight'),'right');
+bindHold(document.getElementById('btnJump'),'jump');
+
+startBtn.addEventListener('click', ()=>{
+  ensureAudio();
+  overlay.classList.add('hidden');
+  round = 1; life = MAX_LIFE;
+  score = 0; level = 1; themeIndex = 0; theme = THEMES[themeIndex];
+  initDecor();
+  buildLevel();
+  state = 'playing';
+  bannerText = ''; bannerT = 0;
+});
+
+// ---------------- UPDATE ----------------
+let wasJump = false;
+function updatePlayer(dt){
+  if(keys.left){ player.vx = -MOVE_SPEED; player.dir=-1; }
+  else if(keys.right){ player.vx = MOVE_SPEED; player.dir=1; }
+  else { player.vx *= 0.8; }
+
+  if(keys.jump && !wasJump && player.onGround){
+    player.vy = JUMP_VEL;
+    player.onGround = false;
+    player.squash = 1.3;
+    sfx.jump();
+  }
+  wasJump = keys.jump;
+
+  player.x += player.vx * dt;
+  player.x = clamp(player.x, 0, W - player.w);
+
+  player.vy += GRAVITY * dt;
+  player.y += player.vy * dt;
+
+  player.onGround = false;
+  for(const p of platforms){
+    const withinX = player.x + player.w > p.x + 6 && player.x < p.x + p.w - 6;
+    const prevBottom = player.y - player.vy*dt + player.h;
+    const newBottom = player.y + player.h;
+    if(withinX && player.vy >= 0 && prevBottom <= p.y + 1 && newBottom >= p.y){
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  }
+  if(player.y > H){ // fell off - treat as hit
+    player.y = -40; player.vy = 0;
+    damagePlayer(2, 1);
+  }
+
+  player.squash += (1-player.squash)*0.18;
+  if(Math.abs(player.vx) > 0.3 && player.onGround) player.runPhase += 0.28*dt;
+}
+
+function damagePlayer(amount, dirAway){
+  if(invuln>0) return;
+  life = clamp(life - amount, 0, MAX_LIFE);
+  invuln = 70;
+  shakeT = 14; shakeMag = 8;
+  player.vy = -7;
+  player.vx = 5 * dirAway;
+  sfx.hit();
+  spawnHurtParticles(player.x+player.w/2, player.y+player.h/2);
+  if(life<=0){
+    state = 'gameover';
+    bannerText = '🧟 Naabutan ka ng mga Zombie!';
+    bannerT = 999;
+    sfx.lose();
+  }
+}
+
+function spawnHurtParticles(x,y){
+  for(let i=0;i<10;i++){
+    particles.push({x,y,vx:rand(-3,3),vy:rand(-5,-1),life:30,c:'#E8475E',r:rand(2,4)});
+  }
+}
+function spawnConfetti(x,y){
+  const colors=['#FFD25A','#5FAF5A','#4FA8D8','#E8475E','#FF8C42'];
+  for(let i=0;i<26;i++){
+    particles.push({x,y,vx:rand(-4,4),vy:rand(-7,-2),life:50,c:colors[randi(0,colors.length-1)],r:rand(3,5),rot:rand(0,7)});
+  }
+}
+function spawnPoof(x,y,color){
+  for(let i=0;i<8;i++){
+    particles.push({x,y,vx:rand(-2,2),vy:rand(-3,0.5),life:24,c:color,r:rand(2,4)});
+  }
+}
+
+function updateZombies(dt){
+  for(const z of zombies){
+    if(!z.alive) continue;
+    z.x += z.vx*dt;
+    if(z.x < z.minX){ z.x=z.minX; z.vx*=-1; }
+    if(z.x > z.maxX){ z.x=z.maxX; z.vx*=-1; }
+    z.bob += 0.08*dt;
+    z.legPhase += 0.15*dt*Math.abs(z.vx);
+
+    const overlapX = player.x < z.x+z.w-6 && player.x+player.w > z.x+6;
+    const overlapY = player.y < z.y+z.h-4 && player.y+player.h > z.y+6;
+    if(overlapX && overlapY){
+      const stomping = player.vy > 1 && (player.y + player.h) - z.y < 26;
+      if(stomping){
+        z.alive = false;
+        player.vy = JUMP_VEL*0.55;
+        sfx.stomp();
+        spawnPoof(z.x+z.w/2, z.y+z.h/2, '#7FA06B');
+        popups.push({x:z.x+z.w/2,y:z.y,text:'+stomp!',c:'#9CE38C',life:40});
+      } else {
+        const dirAway = player.x < z.x ? -1 : 1;
+        damagePlayer(2, dirAway);
+      }
+    }
+  }
+}
+
+function updateBlocks(dt){
+  for(const b of blocks){
+    if(b.collected) continue;
+    b.floatPhase += 0.06*dt;
+    if(b.bumpT>0) b.bumpT -= dt;
+    if(b.shake>0) b.shake -= dt;
+    const bx = b.x, by = b.y + Math.sin(b.floatPhase)*4;
+    const overlapX = player.x < bx+b.w-4 && player.x+player.w > bx+4;
+    const overlapY = player.y < by+b.h-2 && player.y+player.h > by+2;
+    if(overlapX && overlapY){
+      if(b.correct){
+        b.collected = true;
+        const points = b.tier==='ground' ? 1 : (b.tier==='mid' ? 2 : 3);
+        score += points;
+        sfx.correct();
+        spawnConfetti(bx+b.w/2, by);
+        popups.push({x:bx+b.w/2,y:by-10,text:`+${points} 🎉`,c:'#FFD25A',life:60});
+        const leveledUp = checkLevelUp();
+        nextRoundFlow(points, leveledUp);
+      } else {
+        b.collected = true;
+        b.shake = 14;
+        life = clamp(life-1, 0, MAX_LIFE);
+        sfx.wrong();
+        spawnPoof(bx+b.w/2, by, '#b04a3a');
+        popups.push({x:bx+b.w/2,y:by-6,text:'Mali!',c:'#FF8C42',life:40});
+        if(life<=0){
+          state='gameover'; bannerText='🧟 Naabutan ka ng mga Zombie!'; bannerT=999; sfx.lose();
+        }
+      }
+    }
+  }
+}
+
+function checkLevelUp(){
+  if(score >= level * LEVEL_THRESHOLD){
+    level += 1;
+    themeIndex = (themeIndex + 1) % THEMES.length;
+    theme = THEMES[themeIndex];
+    initDecor();
+    sfx.win();
+    return true;
+  }
+  return false;
+}
+
+function nextRoundFlow(points, leveledUp){
+  state = 'roundclear';
+  bannerText = leveledUp
+    ? `🌟 LEVEL UP! Tuloy sa ${theme.label}! (+${points})`
+    : `Tama! ${problem.a} ${problem.op} ${problem.b} = ${problem.answer} (+${points})`;
+  bannerT = leveledUp ? 130 : 90;
+  setTimeout(()=>{
+    round += 1;
+    buildLevel();
+    state = 'playing';
+  }, leveledUp ? 1900 : 1500);
+}
+
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 0.22*dt;
+    p.life -= dt;
+    if(p.life<=0) particles.splice(i,1);
+  }
+  for(let i=popups.length-1;i>=0;i--){
+    popups[i].y -= 0.6*dt;
+    popups[i].life -= dt;
+    if(popups[i].life<=0) popups.splice(i,1);
+  }
+}
+
+function update(dt){
+  time += dt;
+  for(const c of clouds){
+    if(theme.decor==='bubbles'){
+      c.y -= c.spd*0.05*dt; if(c.y < -10) c.y = H+10;
+    } else if(theme.decor==='stars'){
+      c.x += c.spd*0.01*dt; if(c.x > W+10) c.x = -10;
+    } else {
+      c.x += c.spd*0.01*dt; if(c.x > W+60) c.x = -60;
+    }
+  }
+  if(state==='playing'){
+    updatePlayer(dt);
+    updateZombies(dt);
+    updateBlocks(dt);
+    if(invuln>0) invuln -= dt;
+  }
+  updateParticles(dt);
+  if(shakeT>0) shakeT -= dt;
+}
+
+// ---------------- DRAW ----------------
+function drawBackground(){
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,theme.skyTop); g.addColorStop(1,theme.skyBottom);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  const sx=860, sy=70;
+  const pulse = 1 + Math.sin(time*0.05)*0.06;
+
+  if(theme.sunMoon==='sun'){
+    ctx.save();
+    ctx.translate(sx,sy);
+    ctx.rotate(time*0.01);
+    ctx.fillStyle='rgba(255,210,90,0.5)';
+    for(let i=0;i<8;i++){
+      ctx.rotate(Math.PI/4);
+      ctx.beginPath();
+      ctx.ellipse(0,-46*pulse,9,22,0,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.beginPath(); ctx.fillStyle='#FFD25A'; ctx.arc(sx,sy,34*pulse,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.fillStyle='#FFE6A0'; ctx.arc(sx-8,sy-8,12,0,Math.PI*2); ctx.fill();
+  } else if(theme.sunMoon==='planet'){
+    ctx.save();
+    ctx.translate(sx,sy);
+    ctx.fillStyle='#D98C4F'; ctx.beginPath(); ctx.arc(0,0,30,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#B8702F';
+    ctx.beginPath(); ctx.arc(-9,-7,6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10,9,4.5,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.rotate(-0.32);
+    ctx.strokeStyle='rgba(255,230,180,0.85)'; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.ellipse(0,0,46,12,0,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  } else if(theme.sunMoon==='rainbow'){
+    ctx.save();
+    const colors=['#FF6B6B','#FFB85C','#FFE066','#9CE38C','#6FCBE8','#9B8CF2'];
+    for(let i=0;i<colors.length;i++){
+      ctx.strokeStyle=colors[i]; ctx.lineWidth=10;
+      ctx.beginPath(); ctx.arc(W/2, GROUND_Y+60, 380-i*12, Math.PI, Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  } else if(theme.sunMoon==='none'){
+    ctx.save();
+    ctx.fillStyle='rgba(255,255,255,0.07)';
+    for(let i=0;i<4;i++){
+      ctx.save(); ctx.translate(160+i*220,0); ctx.rotate(0.15);
+      ctx.fillRect(-20,0,40,H);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ambient decor: clouds / bubbles / twinkling stars
+  for(const c of clouds){
+    if(theme.decor==='bubbles'){
+      ctx.fillStyle='rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.arc(c.x,c.y,5*c.s+3,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(c.x,c.y,5*c.s+3,0,Math.PI*2); ctx.stroke();
+    } else if(theme.decor==='stars'){
+      const tw = 0.5+0.5*Math.sin(time*0.08+(c.phase||0));
+      ctx.fillStyle=`rgba(255,255,255,${0.35+0.6*tw})`;
+      ctx.beginPath(); ctx.arc(c.x,c.y,1.6*c.s+1,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle = theme.ambientColor;
+      ctx.save(); ctx.translate(c.x,c.y); ctx.scale(c.s,c.s);
+      ctx.beginPath();
+      ctx.ellipse(0,0,30,16,0,0,Math.PI*2);
+      ctx.ellipse(22,-6,22,14,0,0,Math.PI*2);
+      ctx.ellipse(-22,-4,20,13,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // distant terrain
+  ctx.fillStyle=theme.hill1;
+  ctx.beginPath(); ctx.moveTo(0,GROUND_Y);
+  ctx.quadraticCurveTo(160,GROUND_Y-110,340,GROUND_Y-30);
+  ctx.quadraticCurveTo(560,GROUND_Y-140,820,GROUND_Y-20);
+  ctx.quadraticCurveTo(900,GROUND_Y-60,W,GROUND_Y-10);
+  ctx.lineTo(W,GROUND_Y); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle=theme.hill2;
+  ctx.beginPath(); ctx.moveTo(0,GROUND_Y);
+  ctx.quadraticCurveTo(220,GROUND_Y-60,460,GROUND_Y-10);
+  ctx.quadraticCurveTo(700,GROUND_Y-70,W,GROUND_Y-5);
+  ctx.lineTo(W,GROUND_Y); ctx.closePath(); ctx.fill();
+}
+
+function drawEdgeDecor(p){
+  for(const b of blades){
+    if(b.x<p.x || b.x>p.x+p.w) continue;
+    if(theme.decor==='bubbles'){
+      ctx.fillStyle='rgba(255,255,255,0.45)';
+      ctx.beginPath(); ctx.arc(b.x,p.y-2,3,0,Math.PI*2); ctx.fill();
+    } else if(theme.decor==='stars'){
+      ctx.fillStyle='rgba(0,0,0,0.2)';
+      ctx.beginPath(); ctx.arc(b.x,p.y+4,4,0,Math.PI*2); ctx.fill();
+    } else {
+      const sway = Math.sin(time*0.05+b.phase)*3;
+      ctx.strokeStyle = theme.decor==='clouds' ? 'rgba(255,255,255,0.9)' : '#3f9b4d';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(b.x,p.y+2);
+      ctx.quadraticCurveTo(b.x+sway,p.y-b.h*0.6,b.x+sway*1.4,p.y-b.h);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawGroundAndPlatform(p, isGround){
+  if(isGround){
+    ctx.fillStyle=theme.groundBody;
+    ctx.fillRect(p.x,p.y+14,p.w,p.h-14);
+    for(let x=0;x<p.w;x+=26){
+      ctx.fillStyle='rgba(0,0,0,0.08)';
+      ctx.fillRect(p.x+x,p.y+20,2,p.h-20);
+    }
+    ctx.fillStyle=theme.groundTop;
+    ctx.fillRect(p.x,p.y,p.w,16);
+    ctx.fillStyle=theme.groundTopShade;
+    ctx.fillRect(p.x,p.y+10,p.w,6);
+    drawEdgeDecor(p);
+  } else {
+    ctx.fillStyle=theme.plateBody;
+    ctx.fillRect(p.x,p.y+8,p.w,p.h-8);
+    ctx.fillStyle=theme.plateTop;
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y+10);
+    for(let x=0;x<=p.w;x+=14){
+      ctx.lineTo(p.x+x, p.y + (x%28===0?0:6));
+    }
+    ctx.lineTo(p.x+p.w,p.y+10);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle=theme.groundTopShade; ctx.fillRect(p.x,p.y+4,p.w,6);
+  }
+}
+
+function drawBlock(b){
+  if(b.collected && b.value===undefined) return;
+  if(b.collected) return;
+  const y = b.y + Math.sin(b.floatPhase)*4;
+  const shakeX = b.shake>0 ? Math.sin(b.shake*3)*4 : 0;
+  ctx.save();
+  ctx.translate(b.x+shakeX, y);
+  ctx.fillStyle = b.bumpT>0 ? '#C98A4B' : '#B07A45';
+  ctx.strokeStyle = '#5C3B1E'; ctx.lineWidth=2.5;
+  roundRect(0,0,b.w,b.h,8);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.18)';
+  roundRect(4,4,b.w-8,8,3); ctx.fill();
+  ctx.fillStyle='#FFF6E0';
+  const digits = String(b.value).length;
+  const fsize = digits>=4 ? 12 : (digits>=3 ? 15 : 20);
+  ctx.font = `bold ${fsize}px Trebuchet MS, sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(String(b.value), b.w/2, b.h/2+2);
+  ctx.restore();
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function drawZombie(z){
+  if(!z.alive) return;
+  const bobY = Math.sin(z.bob)*3;
+  const leg = Math.sin(z.legPhase)*8;
+  ctx.save();
+  ctx.translate(z.x, z.y+bobY);
+  // legs
+  ctx.fillStyle='#4a4034';
+  ctx.fillRect(8+leg*0.2, z.h-16, 9, 16);
+  ctx.fillRect(z.w-17-leg*0.2, z.h-16, 9, 16);
+  // body (tattered shirt)
+  ctx.fillStyle='#8B9A7A';
+  roundRect(6,16,z.w-12,z.h-30,6); ctx.fill();
+  ctx.fillStyle='#7d8a6d';
+  ctx.fillRect(6,z.h-22,z.w-12,8);
+  // arms reaching forward
+  ctx.strokeStyle='#6F9A5E'; ctx.lineWidth=8; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(6,24); ctx.lineTo(-6+Math.sin(z.bob*1.3)*3, 12);
+  ctx.moveTo(z.w-6,24); ctx.lineTo(z.w+6+Math.sin(z.bob*1.3)*3, 12);
+  ctx.stroke();
+  // head
+  ctx.fillStyle='#7FA06B';
+  ctx.beginPath(); ctx.ellipse(z.w/2,12,13,13,0,0,Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath(); ctx.ellipse(z.w/2-5,11,2.4,3,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(z.w/2+5,11,2.4,3,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(z.w/2-7,18); ctx.quadraticCurveTo(z.w/2,15,z.w/2+7,18); ctx.stroke();
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const flicker = invuln>0 && Math.floor(invuln/6)%2===0;
+  if(flicker) ctx.globalAlpha = 0.35;
+  ctx.save();
+  const cx = player.x + player.w/2;
+  const cy = player.y + player.h;
+  ctx.translate(cx, cy);
+  ctx.scale(player.dir, 1);
+  ctx.scale(1, player.squash);
+  ctx.translate(-player.w/2, -player.h);
+
+  const leg = player.onGround ? Math.sin(player.runPhase)*10 : 6;
+  // legs
+  ctx.fillStyle='#3C5A99';
+  ctx.fillRect(8+leg*0.3, player.h-18, 9, 18);
+  ctx.fillRect(player.w-17-leg*0.3, player.h-18, 9, 18);
+  // shoes
+  ctx.fillStyle='#5C3B1E';
+  ctx.fillRect(6+leg*0.3, player.h-4, 13, 5);
+  ctx.fillRect(player.w-19-leg*0.3, player.h-4, 13, 5);
+  // body overalls
+  ctx.fillStyle='#4A6FA5';
+  roundRect(6,18,player.w-12,player.h-30,6); ctx.fill();
+  ctx.fillStyle='#3a578a';
+  ctx.fillRect(6,player.h-26,player.w-12,8);
+  // shirt sleeves
+  ctx.fillStyle='#E8475E';
+  ctx.fillRect(2,16,10,12);
+  ctx.fillRect(player.w-12,16,10,12);
+  // head
+  ctx.fillStyle='#F4C49A';
+  ctx.beginPath(); ctx.ellipse(player.w/2,10,12,12,0,0,Math.PI*2); ctx.fill();
+  // cap
+  ctx.fillStyle='#E8475E';
+  ctx.beginPath(); ctx.arc(player.w/2,6,12,Math.PI,Math.PI*2); ctx.fill();
+  ctx.fillRect(player.w/2-12,4,24,4);
+  ctx.fillStyle='#c93650';
+  ctx.fillRect(player.w/2-2,2,16,5);
+  // eye
+  ctx.fillStyle='#222';
+  ctx.beginPath(); ctx.arc(player.w/2+4,11,1.8,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawParticles(){
+  for(const p of particles){
+    ctx.globalAlpha = clamp(p.life/30,0,1);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.x-p.r/2,p.y-p.r/2,p.r,p.r);
+  }
+  ctx.globalAlpha = 1;
+  for(const t of popups){
+    ctx.globalAlpha = clamp(t.life/40,0,1);
+    ctx.fillStyle = t.c;
+    ctx.font='bold 16px Trebuchet MS, sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(t.text, t.x, t.y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawHeart(x,y,size,fill){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(size/20,size/20);
+  ctx.beginPath();
+  ctx.moveTo(0,4);
+  ctx.bezierCurveTo(-10,-6,-22,4,0,18);
+  ctx.bezierCurveTo(22,4,10,-6,0,4);
+  ctx.closePath();
+  if(fill>0){
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-22,-10,44*fill,40); ctx.clip();
+    ctx.fillStyle='#E8475E'; ctx.fill();
+    ctx.restore();
+  }
+  ctx.strokeStyle='#6E1F2A'; ctx.lineWidth=1.6;
+  ctx.beginPath();
+  ctx.moveTo(0,4);
+  ctx.bezierCurveTo(-10,-6,-22,4,0,18);
+  ctx.bezierCurveTo(22,4,10,-6,0,4);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawHUD(){
+  for(let i=0;i<5;i++){
+    const ptsLeft = clamp(life - i*2, 0, 2);
+    drawHeart(30+i*30, 30, 24, ptsLeft/2);
+  }
+
+  // wooden sign with equation
+  if(problem){
+    const text = `${problem.a} ${problem.op} ${problem.b} = ?`;
+    ctx.font='bold 22px Trebuchet MS, sans-serif';
+    const tw = ctx.measureText(text).width;
+    const signW = tw+60, signX = W/2-signW/2, signY=14, signH=46;
+    ctx.fillStyle='#9A6B3D';
+    roundRect(signX,signY,signW,signH,10); ctx.fill();
+    ctx.strokeStyle='#5C3B1E'; ctx.lineWidth=3; roundRect(signX,signY,signW,signH,10); ctx.stroke();
+    ctx.fillStyle='#5C3B1E';
+    ctx.beginPath(); ctx.arc(signX+10,signY+10,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(signX+signW-10,signY+10,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFF6E0';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(text, W/2, signY+signH/2+1);
+  }
+
+  // level + score chip
+  ctx.fillStyle='rgba(255,246,224,0.92)';
+  roundRect(W-182,14,166,54,16); ctx.fill();
+  ctx.fillStyle='#2c1d10';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='bold 13px Trebuchet MS, sans-serif';
+  ctx.fillText(`🌍 Antas ${level} • ${theme.label}`, W-99, 30);
+  ctx.font='bold 15px Trebuchet MS, sans-serif';
+  ctx.fillText(`⭐ ${score} puntos`, W-99, 50);
+
+  if(bannerText && bannerT>0){
+    ctx.fillStyle='rgba(40,30,15,0.75)';
+    roundRect(W/2-180,H/2-30,360,60,14); ctx.fill();
+    ctx.fillStyle='#FFD25A';
+    ctx.font='bold 22px Trebuchet MS, sans-serif';
+    ctx.fillText(bannerText, W/2, H/2+2);
+    bannerT -= 1;
+  }
+}
+
+function drawOverlayScreens(){
+  if(state==='gameover'){
+    ctx.fillStyle='rgba(60,10,10,0.55)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#FFD25A'; ctx.font='bold 30px Trebuchet MS, sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('🧟 Naabutan ka ng mga Zombie!', W/2, H/2-30);
+    ctx.fillStyle='#fff'; ctx.font='18px Trebuchet MS, sans-serif';
+    ctx.fillText(`Antas ${level} • ${score} puntos`, W/2, H/2+4);
+    ctx.font='16px Trebuchet MS, sans-serif';
+    ctx.fillText('I-tap ang screen para subukan ulit', W/2, H/2+30);
+  }
+}
+
+canvas.addEventListener('click', ()=>{
+  if(state==='gameover'){
+    round=1; life=MAX_LIFE; score=0; level=1; themeIndex=0; theme=THEMES[themeIndex];
+    initDecor(); buildLevel(); state='playing';
+  }
+});
+
+function draw(){
+  ctx.save();
+  if(shakeT>0){
+    ctx.translate(rand(-shakeMag,shakeMag), rand(-shakeMag,shakeMag));
+  }
+  drawBackground();
+  for(let i=0;i<platforms.length;i++) drawGroundAndPlatform(platforms[i], i===0);
+  for(const b of blocks) drawBlock(b);
+  for(const z of zombies) drawZombie(z);
+  drawPlayer();
+  drawParticles();
+  drawHUD();
+  ctx.restore();
+  drawOverlayScreens();
+}
+
+// ---------------- LOOP ----------------
+let last = performance.now();
+function loop(now){
+  let dt = (now-last)/16.6667;
+  dt = clamp(dt, 0, 2.2);
+  last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+initDecor();
+draw();
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
