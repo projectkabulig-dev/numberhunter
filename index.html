@@ -44,7 +44,7 @@
     width:100%;height:100%;
   }
   #overlay{
-    position:absolute;inset:0;
+    position:fixed;inset:0;overflow-y:auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:radial-gradient(ellipse at center, rgba(15,25,18,0.78), rgba(5,10,8,0.92));
     color:var(--cream);
@@ -111,7 +111,7 @@
   }
   .cbtn:active{background:rgba(255,255,255,0.4);}
   #loginOverlay{
-    position:absolute;inset:0;
+    position:fixed;inset:0;overflow-y:auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:radial-gradient(ellipse at center, rgba(15,25,18,0.85), rgba(5,10,8,0.95));
     color:var(--cream);
@@ -210,7 +210,7 @@
   }
   #homeBtn:active{background:rgba(20,15,8,0.8);}
   #menuOverlay{
-    position:absolute;inset:0;
+    position:fixed;inset:0;overflow-y:auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:radial-gradient(ellipse at center, rgba(15,25,18,0.88), rgba(5,10,8,0.96));
     color:var(--cream);
@@ -242,68 +242,68 @@
         <div class="cbtn" id="btnJump">⤴</div>
       </div>
     </div>
-    <div id="menuOverlay" class="hidden">
-      <h2>⚙️ Klase ng Problema</h2>
-      <p class="tagline">Hindi mababago ang District/School mo — manatili lang ang login.</p>
-      <div class="field">
-        <label for="menuDifficultySelect">Klase ng Problema</label>
-        <div class="select-wrap">
-          <select id="menuDifficultySelect">
-            <option value="1x1">1-digit × 1-digit (1-9) — + − × ÷</option>
-            <option value="2x1">2-digit × 1-digit — + − × ÷</option>
-            <option value="2x2">2-digit × 2-digit — + − × ÷</option>
-          </select>
-        </div>
+  </div>
+  <div id="menuOverlay" class="hidden">
+    <h2>⚙️ Klase ng Problema</h2>
+    <p class="tagline">Hindi mababago ang District/School mo — manatili lang ang login.</p>
+    <div class="field">
+      <label for="menuDifficultySelect">Klase ng Problema</label>
+      <div class="select-wrap">
+        <select id="menuDifficultySelect">
+          <option value="1x1">1-digit × 1-digit (1-9) — + − × ÷</option>
+          <option value="2x1">2-digit × 1-digit — + − × ÷</option>
+          <option value="2x2">2-digit × 2-digit — + − × ÷</option>
+        </select>
       </div>
-      <button class="btn" id="backToGameBtn">▶ Bumalik sa Laro</button>
     </div>
-    <div id="loginOverlay">
-      <h1>🔢 NUMBER HUNTERS 🌽</h1>
-      <p class="tagline">Mag-log in muna bago maglaro</p>
-      <div class="field">
-        <label for="districtSelect">District</label>
-        <div class="select-wrap">
-          <select id="districtSelect">
-            <option value="" disabled selected>Piliin ang District</option>
-            <option>Alcantara</option>
-            <option>Banton</option>
-            <option>Corcuera</option>
-            <option>Concepcion</option>
-            <option>Looc</option>
-            <option>San Fernando</option>
-            <option>Cajidiocan-Magdiwang</option>
-            <option>Romblon</option>
-            <option>San Andres</option>
-            <option>Odiongan North</option>
-            <option>Odiongan South</option>
-            <option>San Agustin-Santa Maria-Calatrava</option>
-            <option>San Jose-Santa Fe</option>
-          </select>
-        </div>
+    <button class="btn" id="backToGameBtn">▶ Bumalik sa Laro</button>
+  </div>
+  <div id="loginOverlay">
+    <h1>🔢 NUMBER HUNTERS 🌽</h1>
+    <p class="tagline">Mag-log in muna bago maglaro</p>
+    <div class="field">
+      <label for="districtSelect">District</label>
+      <div class="select-wrap">
+        <select id="districtSelect">
+          <option value="" disabled selected>Piliin ang District</option>
+          <option>Alcantara</option>
+          <option>Banton</option>
+          <option>Corcuera</option>
+          <option>Concepcion</option>
+          <option>Looc</option>
+          <option>San Fernando</option>
+          <option>Cajidiocan-Magdiwang</option>
+          <option>Romblon</option>
+          <option>San Andres</option>
+          <option>Odiongan North</option>
+          <option>Odiongan South</option>
+          <option>San Agustin-Santa Maria-Calatrava</option>
+          <option>San Jose-Santa Fe</option>
+        </select>
       </div>
-      <div class="field">
-        <label for="schoolInput">Pangalan ng Paaralan</label>
-        <input type="text" id="schoolInput" placeholder="i-type dito..." autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="difficultySelect">Klase ng Problema</label>
-        <div class="select-wrap">
-          <select id="difficultySelect">
-            <option value="1x1" selected>1-digit × 1-digit (1-9) — + − × ÷</option>
-            <option value="2x1">2-digit × 1-digit — + − × ÷</option>
-            <option value="2x2">2-digit × 2-digit — + − × ÷</option>
-          </select>
-        </div>
-      </div>
-      <p id="loginError"></p>
-      <button class="btn" id="proceedBtn">▶ Tuloy sa Laro</button>
     </div>
-    <div id="overlay" class="hidden">
-      <h1>🔢 NUMBER HUNTERS 🌽</h1>
-      <p>Sagutin ang math problem sa itaas, hanapin at hulihin ang <span class="sub">tamang bilang</span> na nasa paligid.
-      Mag-ingat kasi may mga <span class="sub">gumagalang zombies</span>. Apakan sila mula sa itaas para patayin, pero kung mababangga mo ito sa gilid, mababawasan ang buhay mo.</p>
-      <button class="btn" id="startBtn">▶ SIMULAN</button>
+    <div class="field">
+      <label for="schoolInput">Pangalan ng Paaralan</label>
+      <input type="text" id="schoolInput" placeholder="i-type dito..." autocomplete="off">
     </div>
+    <div class="field">
+      <label for="difficultySelect">Klase ng Problema</label>
+      <div class="select-wrap">
+        <select id="difficultySelect">
+          <option value="1x1" selected>1-digit × 1-digit (1-9) — + − × ÷</option>
+          <option value="2x1">2-digit × 1-digit — + − × ÷</option>
+          <option value="2x2">2-digit × 2-digit — + − × ÷</option>
+        </select>
+      </div>
+    </div>
+    <p id="loginError"></p>
+    <button class="btn" id="proceedBtn">▶ Tuloy sa Laro</button>
+  </div>
+  <div id="overlay" class="hidden">
+    <h1>🔢 NUMBER HUNTERS 🌽</h1>
+    <p>Sagutin ang math problem sa itaas, hanapin at hulihin ang <span class="sub">tamang bilang</span> na nasa paligid.
+    Mag-ingat kasi may mga <span class="sub">gumagalang zombies</span>. Apakan sila mula sa itaas para patayin, pero kung mababangga mo ito sa gilid, mababawasan ang buhay mo.</p>
+    <button class="btn" id="startBtn">▶ SIMULAN</button>
   </div>
 </div>
 
