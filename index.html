@@ -193,6 +193,38 @@
     z-index:4;
     pointer-events:none;
   }
+  #homeBtn{
+    position:absolute;
+    top:74px; left:14px;
+    width:34px;height:34px;
+    border-radius:50%;
+    background:rgba(20,15,8,0.55);
+    border:2px solid rgba(255,210,90,0.7);
+    color:#FFD25A;
+    font-size:17px;
+    display:none;
+    align-items:center;justify-content:center;
+    cursor:pointer;
+    z-index:7;
+    user-select:none;
+  }
+  #homeBtn:active{background:rgba(20,15,8,0.8);}
+  #menuOverlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center, rgba(15,25,18,0.88), rgba(5,10,8,0.96));
+    color:var(--cream);
+    text-align:center;
+    padding:5%;
+    gap:14px;
+    z-index:11;
+  }
+  #menuOverlay.hidden{display:none;}
+  #menuOverlay h2{
+    font-size:clamp(18px,4vw,26px);
+    margin:0;
+    color:var(--accent-gold);
+  }
 </style>
 </head>
 <body>
@@ -200,6 +232,7 @@
   <div id="stage">
     <canvas id="game" width="960" height="540"></canvas>
     <div id="hint">⬅️➡️ galaw • ⬆️/Space tumalon • tapakan ang zombie mula sa ITAAS para patayin</div>
+    <div id="homeBtn" title="Piliin ang Klase ng Problema">⚙️</div>
     <div id="controls">
       <div class="pad">
         <div class="cbtn" id="btnLeft">◀</div>
@@ -208,6 +241,21 @@
       <div class="pad">
         <div class="cbtn" id="btnJump">⤴</div>
       </div>
+    </div>
+    <div id="menuOverlay" class="hidden">
+      <h2>⚙️ Klase ng Problema</h2>
+      <p class="tagline">Hindi mababago ang District/School mo — manatili lang ang login.</p>
+      <div class="field">
+        <label for="menuDifficultySelect">Klase ng Problema</label>
+        <div class="select-wrap">
+          <select id="menuDifficultySelect">
+            <option value="1x1">1-digit × 1-digit (1-9) — + − × ÷</option>
+            <option value="2x1">2-digit × 1-digit — + − × ÷</option>
+            <option value="2x2">2-digit × 2-digit — + − × ÷</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" id="backToGameBtn">▶ Bumalik sa Laro</button>
     </div>
     <div id="loginOverlay">
       <h1>🔢 NUMBER HUNTERS 🌽</h1>
@@ -576,6 +624,28 @@ startBtn.addEventListener('click', ()=>{
   buildLevel();
   state = 'playing';
   bannerText = ''; bannerT = 0;
+  homeBtn.style.display = 'flex';
+});
+
+const homeBtn = document.getElementById('homeBtn');
+const menuOverlay = document.getElementById('menuOverlay');
+const menuDifficultySelect = document.getElementById('menuDifficultySelect');
+const backToGameBtn = document.getElementById('backToGameBtn');
+let stateBeforeMenu = 'playing';
+
+homeBtn.addEventListener('click', ()=>{
+  if(state==='start' || state==='gameover') return; // wala pang laro o tapos na ang buhay
+  stateBeforeMenu = state;
+  state = 'paused';
+  menuDifficultySelect.value = difficulty;
+  menuOverlay.classList.remove('hidden');
+});
+
+backToGameBtn.addEventListener('click', ()=>{
+  difficulty = menuDifficultySelect.value;
+  menuOverlay.classList.add('hidden');
+  buildLevel(); // bagong problema gamit ang bagong klase, manatili ang score/life
+  state = 'playing';
 });
 
 // ---------------- UPDATE ----------------
@@ -1130,6 +1200,7 @@ canvas.addEventListener('click', ()=>{
 });
 
 function draw(){
+  homeBtn.style.display = (state==='start' || state==='gameover') ? 'none' : 'flex';
   ctx.save();
   if(shakeT>0){
     ctx.translate(rand(-shakeMag,shakeMag), rand(-shakeMag,shakeMag));
